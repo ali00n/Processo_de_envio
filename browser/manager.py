@@ -3,8 +3,7 @@ import logging
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+
 
 import config
 
@@ -46,30 +45,6 @@ class BrowserManager:
     def get_driver(self):
         """Retorna a instância do driver."""
         return self.driver
-
-    def find_element_with_wait(self, by, value, timeout=None, parent=None):
-        """Encontra um elemento esperando ele estar presente no DOM."""
-        if timeout is None:
-            timeout = self.wait_time
-        
-        if parent is None:
-            parent = self.driver
-            
-        return WebDriverWait(parent, timeout).until(
-            EC.presence_of_element_located((by, value))
-        )
-
-    def find_elements_with_wait(self, by, value, timeout=None, parent=None):
-        """Encontra uma lista de elementos esperando eles estarem presentes no DOM."""
-        if timeout is None:
-            timeout = self.wait_time
-
-        if parent is None:
-            parent = self.driver
-
-        return WebDriverWait(parent, timeout).until(
-            EC.presence_of_all_elements_located((by, value))
-        )
 
     def close(self):
         """Fecha o navegador."""

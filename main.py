@@ -26,12 +26,12 @@ def main():
         scraper.extracao()
         
         # Exemplo de extração de tema do dia e envio de WhatsApp (comentado conforme original)
-        # tema = scraper.extrair_aula_do_dia()
-        # info_tema = scraper.parse_tema(tema)
-        # 
-        # whatsapp = WhatsAppSender(browser_manager)
-        # msg = whatsapp.formatar_mensagem(info_tema)
-        # whatsapp.enviar_whatsapp_via_selenium("5511971736134", msg)
+        tema = scraper.extrair_aula_do_dia()
+        info_tema = scraper.parse_tema(tema)
+
+        whatsapp = WhatsAppSender(browser_manager)
+        msg = whatsapp.formatar_mensagem(info_tema)
+        whatsapp.enviar_whatsapp_via_selenium("5511971736134", msg)
 
     except Exception as e:
         logger.error(f"Erro durante a execução: {e}")

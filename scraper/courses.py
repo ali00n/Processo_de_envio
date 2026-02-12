@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
+from utilities import Utilities
 import config
 
 logger = logging.getLogger(__name__)
@@ -64,8 +65,8 @@ class CourseScraper:
         for atividade in atividades:
             try:
                 # clicar em Material de Apoio
-                material_apoio = self.browser.find_element_with_wait(By.XPATH, "//a[contains(text(), 'Material Apoio')]")
-                self.driver.execute_script("arguments[0].scrollIntoView();", material_apoio)
+                material_apoio = self.browser.find_element_with_wait(By.XPATH, "//h3[contains(text(), 'Novos Avisos')]")
+                self.scroll_by(self.driver, 200)  # Rolar um pouco para garantir que o link esteja visível
                 material_apoio.click()
                 time.sleep(1)
 
