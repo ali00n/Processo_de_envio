@@ -2,6 +2,7 @@
 import time
 import logging
 from selenium.webdriver.common.by import By
+from utilities.utilities import Utilities
 import config
 
 logger = logging.getLogger(__name__)
@@ -14,6 +15,7 @@ class MoodleAuth:
         """
         self.browser = browser_manager
         self.driver = browser_manager.get_driver()
+        self.utilities = Utilities(self.driver)
 
     def login(self):
         """Realiza login no Moodle."""
@@ -21,12 +23,12 @@ class MoodleAuth:
         self.driver.get(config.MOODLE_LOGIN_URL)
 
         # Esperar carregar a página
-        self.browser.find_element_with_wait(By.ID, "username")
+        self.utilities.find_element_with_wait(By.ID, "username")
         logger.info("Página do Moodle carregada.")
 
         self.driver.find_element(By.XPATH, "//input[contains(@id, 'username')]").send_keys(config.USER)
         time.sleep(1)
         self.driver.find_element(By.XPATH, "//input[contains(@id, 'password')]").send_keys(config.PASSWORD)
         time.sleep(1)
-        self.driver.find_element(By.XPATH, "//button[contains(text(), 'Acessar')]").click()
+        self.utilities.find_element_clickable(By.XPATH, "//button[contains(text(), 'Acessar')]").click()
         time.sleep(1)

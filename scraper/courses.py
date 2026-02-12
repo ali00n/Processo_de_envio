@@ -7,7 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
-from utilities import Utilities
+from utilities.utilities import Utilities
 import config
 
 logger = logging.getLogger(__name__)
@@ -20,11 +20,27 @@ class CourseScraper:
         """
         self.browser = browser_manager
         self.driver = browser_manager.get_driver()
+        self.utilities = Utilities(self.driver)
         self.download_dir = config.DOWNLOAD_DIR
+
+    def limpar_downloads(self):
+        """Remove todos os arquivos da pasta de downloads configurada."""
+        if os.path.exists(self.download_dir):
+            logger.info(f"Limpando pasta de downloads: {self.download_dir}")
+            for arquivo in os.listdir(self.download_dir):
+                caminho_completo = os.path.join(self.download_dir, arquivo)
+                try:
+                    if os.path.isfile(caminho_completo):
+                        os.unlink(caminho_completo)
+                        logger.info(f"Arquivo removido: {arquivo}")
+                except Exception as e:
+                    logger.error(f"Erro ao deletar {arquivo}: {e}")
+        else:
+            logger.warning(f"Pasta de downloads não existe: {self.download_dir}")
 
     def dowload_arquivo(self):
         """Busca e baixa arquivos disponíveis na página atual."""
-        downloads = self.browser.find_elements_with_wait(
+        downloads = self.utilities.find_elements_with_wait(
             By.XPATH,
             '//tbody//a[contains(translate(text(),"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"),"download")]'
         )
@@ -58,23 +74,23 @@ class CourseScraper:
         ]
 
         # entrar no embed uma vez
-        embed = self.browser.find_element_with_wait(By.XPATH, "//embed[contains(@src,'avisos.php')]")
+        embed = self.utilities.find_element_with_wait(By.XPATH, "//embed[contains(@src,'avisos.php')]")
         self.driver.switch_to.frame(embed)
         time.sleep(1)
 
         for atividade in atividades:
             try:
                 # clicar em Material de Apoio
-                material_apoio = self.browser.find_element_with_wait(By.XPATH, "//h3[contains(text(), 'Novos Avisos')]")
-                self.scroll_by(self.driver, 200)  # Rolar um pouco para garantir que o link esteja visível
+                material_apoio = self.utilities.find_element_with_wait(By.XPATH, "//a[contains(text(), 'Material Apoio')]")
+                self.utilities.scroll_by(200)  # Rolar um pouco para garantir que o link esteja visível
                 material_apoio.click()
                 time.sleep(1)
 
-                texto_material = self.browser.find_element_with_wait(By.XPATH, "//h3[contains(text(), 'Material de Apoio')]")
+                texto_material = self.utilities.find_element_with_wait(By.XPATH, "//h3[contains(text(), 'Material de Apoio')]")
                 self.driver.execute_script("arguments[0].scrollIntoView();", texto_material)
 
                 # clicar na atividade atual
-                atvd_extensionista = self.browser.find_element_with_wait(
+                atvd_extensionista = self.utilities.find_element_with_wait(
                     By.XPATH, f"//a[contains(text(), '{atividade}')]"
                 )
                 atvd_extensionista.click()
@@ -83,13 +99,9 @@ class CourseScraper:
                 self.dowload_arquivo()
 
                 # voltar para lista
-                material_apoio = self.browser.find_element_with_wait(By.XPATH, "//a[contains(text(), 'Material Apoio')]")
+                material_apoio = self.utilities.find_element_with_wait(By.XPATH, "//a[contains(text(), 'Material Apoio')]")
 
                 # rolar pro topo
-                self.driver.execute_script("window.scrollTo(0, 0);")
-                time.sleep(0.5)
-                self.driver.execute_script("window.scrollTo(0, 0);")
-                time.sleep(0.5)
                 self.driver.execute_script("window.scrollTo(0, 0);")
                 time.sleep(0.5)
 
@@ -105,18 +117,14 @@ class CourseScraper:
         """Navega especificamente para o curso de Ciência de Dados."""
         print("Navegando para Ciência de Dados...")
 
-        # Nota: O switch_to.frame deve ser gerenciado com cuidado se já estiver dentro do frame
-        # Assumindo que voltamos para o contexto default antes de chamar esta função se necessário,
-        # MAS no código original ele entrava no frame de novo. 
-        # Vou assumir que o contexto precisa ser resetado ou verificado.
         self.driver.switch_to.default_content() 
         
-        embed = self.browser.find_element_with_wait(By.XPATH, "//embed[contains(@src,'avisos.php')]")
+        embed = self.utilities.find_element_with_wait(By.XPATH, "//embed[contains(@src,'avisos.php')]")
         self.driver.switch_to.frame(embed)
         time.sleep(1)
 
         # CLICAR EM CIÊNCIA DE DADOS
-        ciencia_dados = self.browser.find_element_with_wait(By.XPATH, "//a[contains(text(), 'Ciência de Dados')]")
+        ciencia_dados = self.utilities.find_element_with_wait(By.XPATH, "//a[contains(text(), 'Ciência de Dados')]")
         time.sleep(0.5)
         self.driver.execute_script("arguments[0].scrollIntoView();", ciencia_dados)
         ciencia_dados.click()
@@ -125,11 +133,11 @@ class CourseScraper:
     def extracao(self):
         """Extrai links e disciplinas de uma tabela específica."""
         # Nota: XPATH fixo pode ser frágil. Mantendo original.
-        tabela = self.browser.find_element_with_wait(By.XPATH, '//*[@id="yui_3_18_1_1_1757728896011_59"]', 20)
+        tabela = self.utilities.find_element_with_wait(By.XPATH, '//*[@id="yui_3_18_1_1_1757728896011_59"]', 20)
         texto_tabela = tabela.text
         print(texto_tabela)
 
-        linhas_tabela = self.browser.find_elements_with_wait(By.TAG_NAME, 'ul', timeout=10, parent=tabela)
+        linhas_tabela = self.utilities.find_elements_with_wait(By.TAG_NAME, 'ul', timeout=10)
 
         for linha in linhas_tabela:
             colunas = linha.find_elements(By.TAG_NAME, 'li')
@@ -151,9 +159,7 @@ class CourseScraper:
         logger.info(f"Extraindo aula do dia {dia} (0=segunda).")
 
         try:
-            tema = WebDriverWait(self.driver, config.WAIT_TIME).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "div.course-content"))
-            ).text
+            tema = self.utilities.find_element_with_wait(By.CSS_SELECTOR, "div.course-content", timeout=config.WAIT_TIME).text
             return tema
         except TimeoutException:
             logger.error("Não foi possível extrair o tema da aula.")
