@@ -1,0 +1,23 @@
+project_root/
+│
+├── config/              # Configuration module
+│   ├── __init__.py      # Exposes settings
+│   └── settings.py      # (Was config.py) Constants and credentials
+│
+├── browser/             # Browser management
+│   ├── __init__.py
+│   └── manager.py       # (Was browser.py) Selenium setup
+│
+├── auth/                # Authentication
+│   ├── __init__.py
+│   └── moodle.py        # (Was auth.py) Login logic
+│
+├── scraper/             # Scraping logic
+│   ├── __init__.py
+│   └── courses.py       # (Was scraper.py) Navigation and downloads
+│
+├── whatsapp/            # Messaging
+│   ├── __init__.py
+│   └── sender.py        # (Was whatsapp.py) WhatsApp logic
+│
+└── main.py              # Orchestrator (Orchestrates the modules)
